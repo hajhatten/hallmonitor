@@ -1,0 +1,102 @@
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Hållplats Mariehällskyrkan</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js" integrity="sha256-CutOzxCRucUsn6C6TcEYsauvvYilEniTXldPa6/wu0k=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/locale/sv.js" integrity="sha256-YU0OUWNXwbPuT6iKMn3l+f4/2GkjXQ1oziq3IAhoOJM=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.16/dist/vue.js"></script>
+
+  </head>
+
+  <body>
+    <div id="app">
+      <div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom box-shadow">
+        <h5 class="my-0 mr-md-auto font-weight-normal">Mariehällskyrkan</h5>
+        <button type="button" class="btn btn-primary active" v-on:click="updateList"><i class="fa fa-refresh"></i></button>
+      </div>
+        
+      <div class="container">
+
+        <h2>Bussar mot stan:</h2>
+        <div class="container col-sm-12" id="inkommande">
+          <table class="table table-hover table-striped">
+            <thead>
+              <th>Buss</th>
+              <th>Destination</th>
+              <th>Ankomst</th>
+            </thead>
+            <tbody>
+              <tr v-for="arrival in list.arrivalsInToCity">
+                <td>{{ arrival.Product.num }}</td>
+                <td>{{ arrivalDestination(arrival.origin) }}</td>
+                <td>{{ arrivalDepTime(arrival.date, arrival.time) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2>Bussar från stan:</h2>
+        <div class="container col-sm-12" id="utgående">
+          <table class="table table-hover table-striped">
+            <thead>
+              <th>Buss</th>
+              <th>Destination</th>
+              <th>Ankomst</th>
+            </thead>
+            <tbody>
+              <tr v-for="arrival in list.arrivalsOutOfCity">
+                <td>{{ arrival.Product.num }}</td>
+                <td>{{ arrivalDestination(arrival.origin) }}</td>
+                <td>{{ arrivalDepTime(arrival.date, arrival.time) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </body>
+
+  <script>
+    moment.locale('sv')
+
+    let app = new Vue({
+      el: '#app',
+      data: {
+        list: {},
+      },
+      methods: {
+        updateList: function () {
+          fetch("http://localhost:3001/halltider").then(r => r.json())
+                                                  .then(data => { this.list = data });
+        },
+        arrivalDepTime: function(date, time) {
+          return moment(date + 'T' + time).fromNow()
+        },
+        arrivalDestination: function(origin) {
+          switch (origin) {
+            case 'Blackebergs gård (Stockholm kn)':
+            return 'Solna centrum'
+            case 'Solna centrum T-bana':
+            return 'Blackebergs gård'
+            case 'Alvik T-bana (Stockholm kn)':
+            return 'Spånga station'
+            case 'Spånga station (Stockholm kn)':
+            return 'Alvik'
+          }
+        }
+      },
+      created: function () {
+        this.updateList();
+      }
+    })
+  </script>
+
+</html>
